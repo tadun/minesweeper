@@ -1,0 +1,5 @@
+build/*
+.vscode/*
+*.o
+*.gch
+wxW_3-0-5/*
