@@ -1,4 +1,6 @@
 build/*
+!build/Images
+!build/Images/*
 .vscode/*
 *.o
 *.gch
