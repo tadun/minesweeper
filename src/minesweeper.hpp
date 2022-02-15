@@ -1,146 +1,80 @@
 #ifndef MINESWEEPER_HPP_
 #define MINESWEEPER_HPP_
 
+// Standard libraries
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+// wxWidgwets libraries
+#include <wx/wx.h>
+#include <wx/button.h>
+#include <wx/event.h>
+#include <wx/timer.h>
 
 using namespace std;
 
-class Field
-{
-    private:
-        int side = 9;
-        int mines = 9;
-
-        int field [9] [9] = {};
-        
-    public:
-        int generate(int side, int mines);
-        int show();
-        bool valid(int row, int col);
-        void move();
-        void recursive(int x, int y);
-
+struct tile 
+{  
+    int type; // 10 = mine, otherwise the number of surrounding mines
+    int kind; // 0 = down, 1 = flag, 2 = questionmark, 3 = uncovered
+    wxBitmapButton *button;
 };
 
-bool Field::valid(int row, int col)
+struct difficulty
 {
-    return (row >= 0) && (row < side) && (col >= 0) && (col < side);
+    int width;
+    int height;
+    int mine_count;
+};
 
-}
+int shown_tiles = 0;
+int seconds = 0;
+int flagged = 0;
 
-int Field::generate(int side, int mines) {
-    
-    int mine_x;
-    int mine_y;
+int width;
+int height;
+int mine_count;
 
-    srand((unsigned int)time(NULL));
-
-    for (int i = 0; i < mines; i++) {
-        mine_x = rand() % side;
-        mine_y = rand() % side;
-        while (field [mine_x] [mine_y] == 10) {
-            mine_x = rand() % side;
-            mine_y = rand() % side;
-            cout << field [mine_x] [mine_y] << mine_x << mine_y << endl;
-        }
-        field [mine_x] [mine_y] = 10;
-
-        if (valid(mine_x, mine_y-1) == true) {
-            if (field [mine_x] [mine_y-1] != 10) {
-                field [mine_x] [mine_y-1] ++;
-            }
-        }
-
-        if (valid(mine_x, mine_y+1) == true) {
-            if (field [mine_x] [mine_y+1] != 10) {
-                field [mine_x] [mine_y+1] ++;
-            }
-        }
-
-        if (valid(mine_x-1, mine_y-1) == true) {
-            if (field [mine_x-1] [mine_y-1] != 10) {
-                field [mine_x-1] [mine_y-1] ++;
-            }
-        }
-
-        if (valid(mine_x-1, mine_y) == true) {
-            if (field [mine_x-1] [mine_y] != 10) {
-                field [mine_x-1] [mine_y] ++;
-            }
-        }
-
-        if (valid(mine_x-1, mine_y+1) == true) {
-            if (field [mine_x-1] [mine_y+1] != 10) {
-                field [mine_x-1] [mine_y+1] ++;
-            }
-        }
-
-        if (valid(mine_x+1, mine_y-1) == true) {
-            if (field [mine_x+1] [mine_y-1] != 10) {
-                field [mine_x+1] [mine_y-1] ++;
-            }
-        }
-
-        if (valid(mine_x+1, mine_y) == true) {
-            if (field [mine_x+1] [mine_y] != 10) {
-                field [mine_x+1] [mine_y] ++;
-            }
-        }
-        
-        if (valid(mine_x+1, mine_y+1) == true) {
-            if (field [mine_x+1] [mine_y+1] != 10) {
-                field [mine_x+1] [mine_y+1] ++;
-            }
-        }
-    }
-}
-
-void Field::recursive(int x, int y) {
-    
-    if (valid (x, y) == true) {
-        if (field [x] [y] == 0) {
-            recursive(x+1, y);
-            recursive(x-1, y);
-            recursive(x, y-1);
-            recursive(x, y+1);
-        }
-    }
-}
-
-void Field::move()
+class MyFrame : public wxFrame
 {
-    int mine_x = rand() % side;
-    int mine_y = rand() % side;
-
-    cout << mine_x << mine_y;
-
-    if (field [mine_x] [mine_y] == 10) {
-        cout << "boom" << endl;
-    }
-
-    else if (field [mine_x] [mine_y] > 0) {
-        cout << field [mine_x] [mine_y] << endl;
-    }
-
-    else {
-        cout << "empty" << endl;
-
-    }
-}
-
-int Field::show() {
+    public:
+        tile *field[30][16];
+        MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
+        void generateButtons();
+        int generateMines(int mine_count, int x, int y);
+        void countAdjecentMines(int mine_x, int mine_y);
+        bool validTile(int row, int col);
+        void showZeros(int x, int y);
+        void gameWon();
+        void OnTimer(wxTimerEvent& event);
+        void saveScore();
     
-    for (int x = 0; x < side; x++) {
-        for (int y = 0; y < side; y++) {
-            if (field[x] [y] == 10) {
-                cout << "*   ";
-            }
-            else {
-                cout << field [x] [y] << "   ";
-            }
-        }
-        cout << endl << endl;
-    }
-}
+    private:
+        wxPanel* new_board;
+        wxTimer m_timer;
+        void onExit(wxCommandEvent &event);
+        void OnLeftDown(wxMouseEvent&);
+        void OnRightDown(wxMouseEvent&);
+        void Beginner(wxEvent& event);
+        void Intermediate(wxEvent& event);
+        void Expert(wxEvent& event);
+
+    wxDECLARE_EVENT_TABLE();
+};
+
+class MyApp : public wxApp
+{
+    public:
+        virtual bool OnInit();
+};
+
+wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
+    
+    EVT_TIMER(5, MyFrame::OnTimer)
+
+    EVT_MENU(wxID_EXIT, MyFrame::onExit)
+    wxEND_EVENT_TABLE();
 
 #endif
