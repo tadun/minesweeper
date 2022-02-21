@@ -6,7 +6,7 @@
 
 # general compilation settings
 CXX      := g++
-CXXFLAGS := -Winvalid-pch -Wall `wx-config --cxxflags` -std=c++11
+CXXFLAGS := -Winvalid-pch -Wall -Wextra `wx-config --cxxflags` -std=c++11
 LDFLAGS  := `wx-config --libs`
 LDLIBS   :=
 debug: CXXFLAGS += -g -DDEBUG

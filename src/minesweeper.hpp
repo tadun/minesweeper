@@ -44,7 +44,7 @@ class MyFrame : public wxFrame
         MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
         void generateButtons();
         int generateMines(int mine_count, int x, int y);
-        void countAdjecentMines(int mine_x, int mine_y);
+        void countAdjecentMines(int x, int y);
         bool validTile(int row, int col);
         void showZeros(int x, int y);
         void gameWon();
@@ -69,12 +69,5 @@ class MyApp : public wxApp
     public:
         virtual bool OnInit();
 };
-
-wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
-    
-    EVT_TIMER(5, MyFrame::OnTimer)
-
-    EVT_MENU(wxID_EXIT, MyFrame::onExit)
-    wxEND_EVENT_TABLE();
 
 #endif

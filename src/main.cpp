@@ -10,7 +10,8 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
 {
     // Setting up the status bar
     CreateStatusBar();
-    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) + "\t  Mines: " + to_string(mine_count-flagged);
+    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) 
+        + "\t  Mines: " + to_string(mine_count-flagged);
     SetStatusText(output);
     new_board = new wxPanel(this, wxID_ANY);
 
@@ -26,7 +27,7 @@ MyFrame::MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size)
     menuGame->Append(wxID_EXIT);
 
     // Creating the score menu
-    fstream file("scores_1.cvs");
+    fstream file("scores_1.csv");
     string line;
     string word;
     string time;
@@ -56,7 +57,7 @@ bool  MyApp::OnInit() // Define frame size
     height = beginner.height;
     mine_count = beginner.mine_count;
 
-    MyFrame* frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(beginner.width*20, beginner.height*20+55));
+    MyFrame *frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(beginner.width*20, beginner.height*20+55));
     frame->Show();
     return true;
 }
@@ -70,7 +71,7 @@ void MyFrame::Beginner(wxEvent& event) // Difficulty 1: 9*9 10 mines
     shown_tiles = 0;
     seconds = 0;
     flagged = 0;
-    MyFrame* frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(width*20, height*20+55));
+    MyFrame *frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(width*20, height*20+55));
     frame->Show();
 }
 
@@ -83,7 +84,7 @@ void MyFrame::Intermediate(wxEvent& event) // Difficulty 2: 16*16 40 mines
     shown_tiles = 0;
     seconds = 0;
     flagged = 0;
-    MyFrame* frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(width*20, height*20+55));
+    MyFrame *frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(width*20, height*20+55));
     frame->Show();
 }
 
@@ -96,13 +97,17 @@ void MyFrame::Expert(wxEvent& event) // Difficulty 3: 30*16 99 mines
     shown_tiles = 0;
     seconds = 0;
     flagged = 0;
-    MyFrame* frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(width*20, height*20+55));
+    MyFrame *frame = new MyFrame("Minesweeper", wxPoint(550, 275), wxSize(width*20, height*20+55));
     frame->Show();
 }
 
 void MyFrame::generateButtons() // Create a field of buttons
 {
     int button_id = 0;
+
+    wxBitmap Bitmap;
+    Bitmap.LoadFile("Images/down.png", wxBITMAP_TYPE_PNG);
+
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
             
@@ -110,8 +115,6 @@ void MyFrame::generateButtons() // Create a field of buttons
             new_tile->type = 0;
             new_tile->kind = 0;
             
-            wxBitmap Bitmap;
-            Bitmap.LoadFile("Images/down.png", wxBITMAP_TYPE_PNG);
             new_tile->button = new wxBitmapButton (this, button_id, Bitmap, wxPoint(i*20, j*20), wxSize(20,20));
             new_tile->button->Bind(wxEVT_RIGHT_DOWN, &MyFrame::OnRightDown, this);
             new_tile->button->Bind(wxEVT_LEFT_DOWN, &MyFrame::OnLeftDown, this);
@@ -127,7 +130,7 @@ int MyFrame::generateMines(int mines, int x, int y) // Generate random mines
     int mine_x;
     int mine_y;
 
-    srand((unsigned int)time(NULL));
+    srand(time(NULL));
 
 // Generate mines
     for (int k = 0; k < mines; k++) {
@@ -135,66 +138,26 @@ int MyFrame::generateMines(int mines, int x, int y) // Generate random mines
         mine_y = rand() % height;
 
         // In case the there already is a mine or it was hit on the first click
-        while (field [mine_x] [mine_y]->type == 10 || (mine_x == x && mine_y == y)) { 
+        while (field[mine_x][mine_y]->type == 10 || (mine_x == x && mine_y == y)) { 
             mine_x = rand() % width;
             mine_y = rand() % height;
         }
-        field [mine_x] [mine_y]->type = 10;
+        field[mine_x][mine_y]->type = 10;
         countAdjecentMines(mine_x, mine_y);
     }
 
     return 0;
 }
 
-void MyFrame::countAdjecentMines(int mine_x, int mine_y) // Add one to all eight surrounding tiles
+void MyFrame::countAdjecentMines(int x, int y) // Add one to all eight surrounding tiles
 {
-    if (validTile(mine_x, mine_y-1)) {
-            if (field [mine_x] [mine_y-1]->type != 10) {
-                field [mine_x] [mine_y-1]->type ++;
-            }
+    for (int i = 0; i <= 2; i++) {
+        for (int j = 0; j <= 2; j++) {
+            if (validTile(x-1+i, y-1+j) && field[x-1+i][y-1+j]->type != 10 && !(i == 1 && j == 1)) {
+                field[x-1+i][y-1+j]->type++;
+            }       
         }
-
-        if (validTile(mine_x, mine_y+1)) {
-            if (field [mine_x] [mine_y+1]->type != 10) {
-                field [mine_x] [mine_y+1]->type ++;
-            }
-        }
-
-        if (validTile(mine_x-1, mine_y-1)) {
-            if (field [mine_x-1] [mine_y-1]->type != 10) {
-                field [mine_x-1] [mine_y-1]->type ++;
-            }
-        }
-
-        if (validTile(mine_x-1, mine_y)) {
-            if (field [mine_x-1] [mine_y]->type != 10) {
-                field [mine_x-1] [mine_y]->type ++;
-            }
-        }
-
-        if (validTile(mine_x-1, mine_y+1)) {
-            if (field [mine_x-1] [mine_y+1]->type != 10) {
-                field [mine_x-1] [mine_y+1]->type ++;
-            }
-        }
-
-        if (validTile(mine_x+1, mine_y-1)) {
-            if (field [mine_x+1] [mine_y-1]->type != 10) {
-                field [mine_x+1] [mine_y-1]->type ++;
-            }
-        }
-
-        if (validTile(mine_x+1, mine_y)) {
-            if (field [mine_x+1] [mine_y]->type != 10) {
-                field [mine_x+1] [mine_y]->type ++;
-            }
-        }
-        
-        if (validTile(mine_x+1, mine_y+1)) {
-            if (field [mine_x+1] [mine_y+1]->type != 10) {
-                field [mine_x+1] [mine_y+1]->type ++;
-            }
-        }
+    }
 }
 
 void MyFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react appropriately
@@ -208,7 +171,7 @@ void MyFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react appr
         generateMines(mine_count, x, y);
     }
     
-    wxBitmapButton* button = reinterpret_cast <wxBitmapButton*> (event.GetEventObject());
+    wxBitmapButton *button = reinterpret_cast <wxBitmapButton*> (event.GetEventObject());
 
     if (field[x][y]->kind == 0 || field[x][y]->kind == 2) { // Down or a questionmark
         switch (field[x][y]->type) {  
@@ -275,29 +238,23 @@ void MyFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a questi
 
 void MyFrame::showZeros(int x, int y) // Uncover all surrounding empty tiles
 {
-    if (validTile (x, y)) {
-        if (field[x][y]->kind == 0 || field[x][y]->kind == 2) {
-            field[x][y]->kind = 3;
+    if (!validTile(x, y) || (field[x][y]->kind != 0 && field[x][y]->kind != 2)) return;
+    field[x][y]->kind = 3;
 
-            if (field[x][y]->type == 0) {
-                shown_tiles++;
-                field[x][y]->button->SetBitmap(wxBitmap(("Images/0.png"), wxBITMAP_TYPE_PNG));
-                showZeros(x-1, y);
-                showZeros(x+1, y);
-                showZeros(x, y+1);
-                showZeros(x, y-1);
-                showZeros(x-1, y-1);
-                showZeros(x+1, y+1);
-                showZeros(x-1, y+1);
-                showZeros(x+1, y-1);
-            }
-
-            else if (field[x][y]->type != 10) {
-                string name = "Images/" + to_string(field[x][y]->type) + ".png";
-                field[x][y]->button->SetBitmap(wxBitmap((name), wxBITMAP_TYPE_PNG));
-                shown_tiles++;
+    if (field[x][y]->type == 0) {
+        shown_tiles++;
+        field[x][y]->button->SetBitmap(wxBitmap(("Images/0.png"), wxBITMAP_TYPE_PNG));
+        for (int i = 0; i <= 2; i++) {
+            for (int j = 0; j <= 2; j++) {
+                showZeros(x-1+i, y-1+j);
             }
         }
+    }
+
+    else if (field[x][y]->type != 10) {
+        string name = "Images/" + to_string(field[x][y]->type) + ".png";
+        field[x][y]->button->SetBitmap(wxBitmap((name), wxBITMAP_TYPE_PNG));
+        shown_tiles++;
     }
 }
 
@@ -308,25 +265,25 @@ bool MyFrame::validTile(int row, int col) // Checks if the coordinates exist in 
 
 void MyFrame::gameWon() // Flag all remaining mines and disable buttons
 {
-    if (shown_tiles == (width)*(height) - mine_count) {
-        m_timer.Stop();
-        string time = to_string(seconds/60) + ":" + to_string(seconds%60);
-        SetStatusText("You won!\t\t Time: " + time);
-        saveScore();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                if (field[i][j]->type == 10) {
-                    field[i][j]->button->SetBitmap(wxBitmap(("Images/flag.png"), wxBITMAP_TYPE_PNG));
-                }
-                field[i][j]->button->Disable();
+    if (shown_tiles != (width)*(height) - mine_count) return; // Only mines remained hidden
+    m_timer.Stop();
+    string time = to_string(seconds/60) + ":" + to_string(seconds%60);
+    SetStatusText("You won!\t\t Time: " + time);
+    saveScore();
+    for (int i = 0; i < width; i++) {
+        for (int j = 0; j < height; j++) {
+            if (field[i][j]->type == 10) {
+                field[i][j]->button->SetBitmap(wxBitmap(("Images/flag.png"), wxBITMAP_TYPE_PNG));
             }
+            field[i][j]->button->Disable();
         }
     }
+    
 }
 
 void MyFrame::saveScore() // Save the score if it is one of the top five
 {
-    fstream file("scores_1.cvs");
+    fstream file("scores_1.csv");
     int score;
     string temporary[5];
     string word;
@@ -340,7 +297,7 @@ void MyFrame::saveScore() // Save the score if it is one of the top five
         getline(s, word, ',');
         score = stoi(word);
 
-        if (score > seconds) {
+        if (score > seconds) { // New high score
             cout << "Enter your name: ";
             cin >> my_name;
             string out = to_string(seconds) + "," + my_name;
@@ -365,7 +322,7 @@ void MyFrame::saveScore() // Save the score if it is one of the top five
     }
 
     file.close();
-    file.open("scores_1.cvs", ios::out | ios::trunc);
+    file.open("scores_1.csv", ios::out | ios::trunc); // Replace the old scores
 
     for (int i = 0; i <= 4; i++) {
         file << temporary[i] << endl;
@@ -374,7 +331,7 @@ void MyFrame::saveScore() // Save the score if it is one of the top five
     file.close();
 }
 
-void MyFrame::onExit(wxCommandEvent &event) // Quit
+void MyFrame::onExit(wxCommandEvent &event)
 {
     Close(true);
 }
@@ -387,3 +344,8 @@ void MyFrame::OnTimer(wxTimerEvent& event) // Update time and remaining mines ea
 }
 
 wxIMPLEMENT_APP(MyApp);
+
+wxBEGIN_EVENT_TABLE(MyFrame, wxFrame)
+    EVT_TIMER(5, MyFrame::OnTimer)
+    EVT_MENU(wxID_EXIT, MyFrame::onExit)
+wxEND_EVENT_TABLE();
