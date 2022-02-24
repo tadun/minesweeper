@@ -17,8 +17,8 @@ using namespace std;
 
 struct tile 
 {  
-    int type; // 10 = mine, otherwise the number of surrounding mines
-    int kind; // 0 = down, 1 = flag, 2 = questionmark, 3 = uncovered
+    int tile_type;
+    int hidden_kind;
     wxBitmapButton *button;
 };
 
@@ -29,42 +29,52 @@ struct difficulty
     int mine_count;
 };
 
-int shown_tiles = 0;
-int seconds = 0;
-int flagged = 0;
-
-int width;
-int height;
-int mine_count;
-
-class MyFrame : public wxFrame
+class GameFrame : public wxFrame
 {
     public:
         tile *field[30][16];
-        MyFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
-        void generateButtons();
-        int generateMines(int mine_count, int x, int y);
-        void countAdjecentMines(int x, int y);
-        bool validTile(int row, int col);
-        void showZeros(int x, int y);
-        void gameWon();
-        void OnTimer(wxTimerEvent& event);
-        void saveScore();
+        GameFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
+        ~GameFrame();
+        void LoadBitmaps();
+        void GenerateButtons();
+        void GenerateMines(int x, int y);
+        void CountAdjecentMines(int x, int y);
+        bool ValidTile(int x, int y);
+        void ShowZeros(int x, int y);
+        void GameWon();
+        void OnTimer(wxTimerEvent &);
+        void SaveScore();
+        wxBitmap  ReturnNumber(int type);
+        
     
     private:
-        wxPanel* new_board;
-        wxTimer m_timer;
-        void onExit(wxCommandEvent &event);
-        void OnLeftDown(wxMouseEvent&);
-        void OnRightDown(wxMouseEvent&);
-        void Beginner(wxEvent& event);
-        void Intermediate(wxEvent& event);
-        void Expert(wxEvent& event);
+        wxPanel *new_board;
+        wxTimer timer;
+        void OnExit(wxCommandEvent &);
+        void OnLeftDown(wxMouseEvent &);
+        void OnRightDown(wxMouseEvent &);
+        void SelectDifficulty(wxEvent &event);
+
+        wxBitmap empty_bmp;
+        wxBitmap one_bmp;
+        wxBitmap two_bmp;
+        wxBitmap three_bmp;
+        wxBitmap four_bmp;
+        wxBitmap five_bmp;
+        wxBitmap six_bmp;
+        wxBitmap seven_bmp;
+        wxBitmap eight_bmp;
+        wxBitmap down_bmp;
+        wxBitmap flag_bmp;
+        wxBitmap hit_bmp;
+        wxBitmap mine_bmp;
+        wxBitmap questionmark_bmp;
+        wxBitmap wrong_bmp;
 
     wxDECLARE_EVENT_TABLE();
 };
 
-class MyApp : public wxApp
+class App : public wxApp
 {
     public:
         virtual bool OnInit();
