@@ -3,6 +3,7 @@
 
 // Standard libraries
 #include <iostream>
+#include "minesweeper.hpp"
 
 // wxWidgwets libraries
 #include <wx/wx.h>
@@ -15,35 +16,27 @@ using namespace std;
 class GameFrame : public wxFrame
 {
     public:
+        wxBitmapButton *buttons[30][16];
         GameFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
         ~GameFrame();
         void LoadBitmaps();
+        void CreateButtons(int width, int height);
         void OnTimer(wxTimerEvent &);
         wxBitmap  ReturnNumber(int type);
+        Minesweeper M;
     
     private:
         wxPanel *new_board;
         wxTimer timer;
         int seconds;
+        int width;
+        int height;
         void OnExit(wxCommandEvent &);
         void OnLeftDown(wxMouseEvent &);
         void OnRightDown(wxMouseEvent &);
 
-        wxBitmap empty_bmp;
-        wxBitmap one_bmp;
-        wxBitmap two_bmp;
-        wxBitmap three_bmp;
-        wxBitmap four_bmp;
-        wxBitmap five_bmp;
-        wxBitmap six_bmp;
-        wxBitmap seven_bmp;
-        wxBitmap eight_bmp;
-        wxBitmap down_bmp;
-        wxBitmap flag_bmp;
-        wxBitmap hit_bmp;
-        wxBitmap mine_bmp;
-        wxBitmap questionmark_bmp;
-        wxBitmap wrong_bmp;
+        wxBitmap type_bmp[12];
+        wxBitmap kind_bmp[4];
 
     wxDECLARE_EVENT_TABLE();
 };
