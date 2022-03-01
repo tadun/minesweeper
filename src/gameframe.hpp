@@ -17,20 +17,23 @@ class GameFrame : public wxFrame
 {
     public:
         wxBitmapButton *buttons[30][16];
-        GameFrame(const wxString &title, const wxPoint &pos, const wxSize &size);
+        GameFrame(const wxString &title, const wxPoint &pos, const wxSize &size, int dif);
         ~GameFrame();
+        void ChooseDifficulty(wxEvent& event);
         void LoadBitmaps();
         void CreateButtons(int width, int height);
         void OnTimer(wxTimerEvent &);
         wxBitmap  ReturnNumber(int type);
+
         Minesweeper M;
+        
     
     private:
         wxPanel *new_board;
         wxTimer timer;
-        int seconds;
         int width;
         int height;
+        int mine_count;
         void OnExit(wxCommandEvent &);
         void OnLeftDown(wxMouseEvent &);
         void OnRightDown(wxMouseEvent &);

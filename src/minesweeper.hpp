@@ -41,26 +41,26 @@ class Minesweeper
 {
     public:
         tile *field[30][16];
+        difficulty dif;
+        int shown_tiles;
+        int seconds;
+        int flagged;
         void Game(int x, int y);
         void ChangeKind(int x, int y);
         ~Minesweeper();
         void GenerateField();
-        void GenerateMines();
+        void GenerateMines(int x, int y);
         void SelectDifficulty(int choice);
         void ShowField();
+        bool CheckWin();
         int GetWidth() {return dif.width;};
         int GetHeight() {return dif.height;};
         int GetMineCount() {return dif.mine_count;};
 
     private:
-        difficulty dif;
-        int shown_tiles;
-        int seconds;
-        int flagged;
         void SetSurroundingTiles(int x, int y);
         bool ValidTile(int x, int y);
         void ShowZeros(int x, int y);
-        void CheckWin();
         void SaveScore();
 };
 
