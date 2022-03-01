@@ -44,10 +44,10 @@ class GameFrame : public wxFrame
     wxDECLARE_EVENT_TABLE();
 };
 
-class App : public wxApp
-{
-    public:
-        virtual bool OnInit();
-};
+// class App : public wxApp
+// {
+//     public:
+//         virtual bool OnInit();
+// };
 
 #endif

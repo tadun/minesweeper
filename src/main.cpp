@@ -1,10 +1,4 @@
-#include "minesweeper.hpp"
-#include "gameframe.hpp"
-
-#include <wx/wx.h>
-#include <wx/button.h>
-#include <wx/event.h>
-#include <wx/timer.h>
+#include "main.hpp"
 
 using namespace std;
 
