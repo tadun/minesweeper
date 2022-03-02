@@ -4,29 +4,16 @@ const difficulty beginner = {9, 9, 10};
 const difficulty intermediate = {16, 16, 40};
 const difficulty expert = {30, 16, 99};
 
-void Minesweeper::Game(int x, int y) 
+void Minesweeper::GameLogic(int x, int y) 
 {
-    cout << "x: " << x << " y: " << y << endl;
-    
-    cout << field[x][y]->tile_type << endl;
-    cout << field[x][y]->hidden_kind << endl;
-
     if (field[x][y]->hidden_kind != covered && field[x][y]->hidden_kind != questionmark) return;
-    
-    cout << "checkpoint 1" << endl;
-
     if (field[x][y]->number == 0) {
-        ShowZeros(x,y);
-        //CheckWin();
-        cout << "checkpoint 2" << endl;
+        showZeros(x,y);
     }
 
     else if (field[x][y]->tile_type == mine) { // Explode
         shown_tiles++;
         field[x][y]->hidden_kind = uncovered;
-        cout << "BOOM!" << endl;
-
-        cout << "checkpoint 3" << endl;
 
         for (int i = 0; i < dif.width; i++) {
             for (int j = 0; j < dif.height; j++) { // Show remaining mines
@@ -40,25 +27,14 @@ void Minesweeper::Game(int x, int y)
             }
         }
         field[x][y]->tile_type = hit;
-        cout << "checkpoint 4" << endl;
     }
 
 
     else {
         shown_tiles++;
         field[x][y]->hidden_kind = uncovered;
-        //CheckWin();
     }
 
-}
-
-Minesweeper::~Minesweeper() 
-{
-    for (int i = 0; i < dif.width; i++) {
-        for (int j = 0; j < dif.height; j++) {
-            field[i][j] = NULL;
-        }
-    }
 }
 
 void Minesweeper::ChangeKind(int x, int y) 
@@ -127,24 +103,24 @@ void Minesweeper::GenerateMines(int x, int y) // Generate random mines
         
         field[mine_x][mine_y]->tile_type = mine;
         field[mine_x][mine_y]->number = 10;
-        SetSurroundingTiles(mine_x, mine_y);
+        setSurroundingTiles(mine_x, mine_y);
     }
 }
 
-void Minesweeper::SetSurroundingTiles(int x, int y) // Add one to all eight surrounding tiles
+void Minesweeper::setSurroundingTiles(int x, int y) // Add one to all eight surrounding tiles
 {
     for (int i = 0; i <= 2; i++) {
         for (int j = 0; j <= 2; j++) {
-            if (ValidTile(x-1+i, y-1+j) && field[x-1+i][y-1+j]->tile_type != 10 && !(i == 1 && j == 1)) {
+            if (validTile(x-1+i, y-1+j) && field[x-1+i][y-1+j]->tile_type != 10 && !(i == 1 && j == 1)) {
                 field[x-1+i][y-1+j]->number++;
             }       
         }
     }
 }
 
-void Minesweeper::ShowZeros(int x, int y) // Uncover all surrounding empty tiles
+void Minesweeper::showZeros(int x, int y) // Uncover all surrounding empty tiles
 {
-    if (!ValidTile(x, y) || !(field[x][y]->hidden_kind == covered || field[x][y]->hidden_kind == questionmark)) return;
+    if (!validTile(x, y) || !(field[x][y]->hidden_kind == covered || field[x][y]->hidden_kind == questionmark)) return;
     field[x][y]->hidden_kind = uncovered;
     shown_tiles++;
 
@@ -152,14 +128,14 @@ void Minesweeper::ShowZeros(int x, int y) // Uncover all surrounding empty tiles
         for (int i = 0; i <= 2; i++) {
             for (int j = 0; j <= 2; j++) {
                 if (!(i == 1 && j == 1)) {
-                    ShowZeros(x-1+i, y-1+j);
+                    showZeros(x-1+i, y-1+j);
                 }
             }
         }
     }
 }
 
-bool Minesweeper::ValidTile(int x, int y) // Checks if the coordinates exist in the field
+bool Minesweeper::validTile(int x, int y) // Checks if the coordinates exist in the field
 {
     return (x >= 0) && (x < dif.width) && (y >= 0) && (y < dif.height);
 }
@@ -167,7 +143,6 @@ bool Minesweeper::ValidTile(int x, int y) // Checks if the coordinates exist in 
 bool Minesweeper::CheckWin() // Flag all remaining mines and disable buttons
 {
     if (shown_tiles != (dif.width)*(dif.height) - dif.mine_count) return false; // Only mines remained hidden
-    cout << "You won!" << endl;
     //SaveScore();
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
@@ -179,7 +154,7 @@ bool Minesweeper::CheckWin() // Flag all remaining mines and disable buttons
     return true;
 }
 
-void Minesweeper::SaveScore() // Save the score if it is one of the top five
+void Minesweeper::saveScore() // Save the score if it is one of the top five
 {
     fstream file("scores_1.csv");
     int score;
@@ -229,26 +204,26 @@ void Minesweeper::SaveScore() // Save the score if it is one of the top five
     file.close();
 }
 
-void Minesweeper::ShowField()
+void Minesweeper::showField()
 {
     for (int j = 0; j < dif.width; j++) {
         for (int i = 0; i < dif.height; i++) {
-            // if (field[i][j]->hidden_kind == covered) {
-            //     cout << "-   ";
-            // }
+            if (field[i][j]->hidden_kind == covered) {
+                cout << "-   ";
+            }
 
-            // else if (field[i][j]->hidden_kind == flag) {
-            //     cout << "f   ";
-            // }
+            else if (field[i][j]->hidden_kind == flag) {
+                cout << "f   ";
+            }
 
-            // else if (field[i][j]->hidden_kind == questionmark) {
-            //     cout << "?   ";
-            // }
-            // else if (field[i][j]->tile_type == wrong) {
-            //     cout << "x   ";
-            // }
+            else if (field[i][j]->hidden_kind == questionmark) {
+                cout << "?   ";
+            }
+            else if (field[i][j]->tile_type == wrong) {
+                cout << "x   ";
+            }
 
-            /*else*/ if (field[i][j]->hidden_kind == /*un*/covered) {
+            else if (field[i][j]->hidden_kind == uncovered) {
                 if (field[i][j]->tile_type == mine) {
                     cout << "*   ";
                 }
@@ -258,5 +233,13 @@ void Minesweeper::ShowField()
             }
         }
     cout << endl << endl;
+    }
+}
+
+Minesweeper::~Minesweeper() {
+    for (int i = 0; i < dif.width; i++) {
+        for (int j = 0; j < dif.height; j++) {
+            delete field[i][j];
+        }
     }
 }

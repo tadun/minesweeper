@@ -8,30 +8,27 @@
 
 using namespace std;
 
-enum kind 
-{   covered = 0, 
+enum kind {   
+    covered = 0, 
     flag = 1, 
     questionmark = 2,
     uncovered = 3,
 };
 
-enum type 
-{
+enum type {
     hit = 9,
     mine = 10,
     wrong = 11,
     number = 12
 };
 
-struct tile 
-{  
+struct tile {  
     int number;
     type tile_type;
     kind hidden_kind;
 };
 
-struct difficulty
-{
+struct difficulty {
     int width;
     int height;
     int mine_count;
@@ -45,23 +42,24 @@ class Minesweeper
         int shown_tiles;
         int seconds;
         int flagged;
-        void Game(int x, int y);
-        void ChangeKind(int x, int y);
-        ~Minesweeper();
+
+        void SelectDifficulty(int choice);
         void GenerateField();
         void GenerateMines(int x, int y);
-        void SelectDifficulty(int choice);
-        void ShowField();
+        void GameLogic(int x, int y);
+        void ChangeKind(int x, int y);
         bool CheckWin();
         int GetWidth() {return dif.width;};
         int GetHeight() {return dif.height;};
         int GetMineCount() {return dif.mine_count;};
+        ~Minesweeper();
 
     private:
-        void SetSurroundingTiles(int x, int y);
-        bool ValidTile(int x, int y);
-        void ShowZeros(int x, int y);
-        void SaveScore();
+        bool validTile(int x, int y);
+        void setSurroundingTiles(int x, int y);
+        void showZeros(int x, int y);
+        void showField();
+        void saveScore();
 };
 
 #endif

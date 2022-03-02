@@ -45,23 +45,9 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     menuBar->Append(menu_game, "&New Game");
     SetMenuBar(menuBar);
 
-    //M.GenerateMines(1, 1);
-
-    //M.ShowField();
-
     LoadBitmaps();
     CreateButtons(width, height);
     Fit();
-}
-
-GameFrame::~GameFrame() 
-{
-    for (int i = 0; i < width; i++) {
-        for (int j = 0; j < height; j++) {
-            M.field[i][j] = NULL;
-            buttons[i][j] = NULL;
-        }
-    }
 }
 
 void GameFrame::LoadBitmaps() 
@@ -101,25 +87,12 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
     int x = id/height;
     int y = id%height;
 
-    cout << "before" << endl;
-    cout << M.shown_tiles << endl;
-    cout << M.shown_tiles << endl;
-
-
     if (M.shown_tiles == 0) {
-        //timer.Start(1000);
+        timer.Start(1000);
         M.GenerateMines(x, y);
     }
-    
-    cout << "before" << endl;
 
-    M.Game(x, y);
-
-    cout << "1" << endl;
-    cout << M.field[x][y]->hidden_kind << endl;
-    cout << "2" << endl;
-
-    //cout << "after" << endl;
+    M.GameLogic(x, y);
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
@@ -173,9 +146,7 @@ void GameFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a ques
 
 void GameFrame::ChooseDifficulty(wxEvent& event) {
     int id = event.GetId();
-    
 
-    //dif_choice = id;
     M.SelectDifficulty(id);
 
     GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.dif.width*20, M.dif.height*20+55), id);
@@ -187,8 +158,6 @@ void GameFrame::ChooseDifficulty(wxEvent& event) {
 
 void GameFrame::OnExit(wxCommandEvent &)
 {
-    // GameFrame::~GameFrame();
-    // M.~Minesweeper();
     Close(true);
 }
 
