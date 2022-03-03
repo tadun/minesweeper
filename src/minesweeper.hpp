@@ -43,15 +43,15 @@ class Minesweeper
         int seconds;
         int flagged;
 
-        void SelectDifficulty(int choice);
-        void GenerateField();
-        void GenerateMines(int x, int y);
-        void GameLogic(int x, int y);
-        void ChangeKind(int x, int y);
-        bool CheckWin();
-        int GetWidth() {return dif.width;};
-        int GetHeight() {return dif.height;};
-        int GetMineCount() {return dif.mine_count;};
+        void selectDifficulty(int choice);
+        void generateField();
+        void generateMines(int x, int y);
+        void gameLogic(int x, int y);
+        void changeKind(int x, int y);
+        bool checkWin();
+        int getWidth() {return dif.width;};
+        int getHeight() {return dif.height;};
+        int getMineCount() {return dif.mine_count;};
         ~Minesweeper();
 
     private:

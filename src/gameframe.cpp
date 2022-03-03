@@ -16,13 +16,13 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     : wxFrame(NULL, wxID_ANY, title, pos, size),
     timer(this, timer_id)
 {
-    M.SelectDifficulty(dif);
+    M.selectDifficulty(dif);
    
-    width = M.GetWidth();
-    height = M.GetHeight();
-    mine_count = M.GetMineCount();
+    width = M.getWidth();
+    height = M.getHeight();
+    mine_count = M.getMineCount();
    
-    M.GenerateField();
+    M.generateField();
 
     // Setting up the status bar
     CreateStatusBar();
@@ -33,11 +33,11 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     // Creating the difficulty menu
     wxMenu *menu_game = new wxMenu;
     menu_game->Append(1, "&Beginner");
-    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::ChooseDifficulty, this, beginner_id);
+    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, beginner_id);
     menu_game->Append(2, "&Intermediate");
-    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::ChooseDifficulty, this, intermediate_id);
+    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, intermediate_id);
     menu_game->Append(3, "&Expert");
-    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::ChooseDifficulty, this, expert_id);
+    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, expert_id);
     menu_game->AppendSeparator();
     menu_game->Append(wxID_EXIT);
 
@@ -45,12 +45,12 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     menuBar->Append(menu_game, "&New Game");
     SetMenuBar(menuBar);
 
-    LoadBitmaps();
-    CreateButtons(width, height);
+    loadBitmaps();
+    createButtons(width, height);
     Fit();
 }
 
-void GameFrame::LoadBitmaps() 
+void GameFrame::loadBitmaps() 
 {
     string path;
 
@@ -66,7 +66,7 @@ void GameFrame::LoadBitmaps()
     }
  }
 
-void GameFrame::CreateButtons(int width, int height) 
+void GameFrame::createButtons(int width, int height) 
 {
     int button_id = 0;
 
@@ -89,10 +89,10 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
 
     if (M.shown_tiles == 0) {
         timer.Start(1000);
-        M.GenerateMines(x, y);
+        M.generateMines(x, y);
     }
 
-    M.GameLogic(x, y);
+    M.gameLogic(x, y);
 
     for (int i = 0; i < width; i++) {
         for (int j = 0; j < height; j++) {
@@ -107,7 +107,7 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
         }
     }
 
-    if (M.CheckWin()) {
+    if (M.checkWin()) {
         timer.Stop();
         string time = to_string(M.seconds/60) + ":" + to_string(M.seconds%60);
         SetStatusText("You won!\t Time: " + time);
@@ -136,7 +136,7 @@ void GameFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a ques
     int x = id/height;
     int y = id%height;
 
-    M.ChangeKind(x, y);
+    M.changeKind(x, y);
 
     if (M.field[x][y]->hidden_kind != 3) {
         buttons[x][y]->SetBitmap(kind_bmp[M.field[x][y]->hidden_kind]);
@@ -144,10 +144,10 @@ void GameFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a ques
     
 }
 
-void GameFrame::ChooseDifficulty(wxEvent& event) {
+void GameFrame::chooseDifficulty(wxEvent& event) {
     int id = event.GetId();
 
-    M.SelectDifficulty(id);
+    M.selectDifficulty(id);
 
     GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.dif.width*20, M.dif.height*20+55), id);
     frame->Show();

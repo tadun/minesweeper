@@ -29,9 +29,9 @@ class GameFrame : public wxFrame
         int height;
         int mine_count;
 
-        void ChooseDifficulty(wxEvent& event);
-        void LoadBitmaps();
-        void CreateButtons(int width, int height);
+        void chooseDifficulty(wxEvent& event);
+        void loadBitmaps();
+        void createButtons(int width, int height);
         void OnTimer(wxTimerEvent &);
         void OnExit(wxCommandEvent &);
         void OnLeftDown(wxMouseEvent &);

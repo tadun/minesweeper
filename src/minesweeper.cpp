@@ -4,7 +4,7 @@ const difficulty beginner = {9, 9, 10};
 const difficulty intermediate = {16, 16, 40};
 const difficulty expert = {30, 16, 99};
 
-void Minesweeper::GameLogic(int x, int y) 
+void Minesweeper::gameLogic(int x, int y) 
 {
     if (field[x][y]->hidden_kind != covered && field[x][y]->hidden_kind != questionmark) return;
     if (field[x][y]->number == 0) {
@@ -37,7 +37,7 @@ void Minesweeper::GameLogic(int x, int y)
 
 }
 
-void Minesweeper::ChangeKind(int x, int y) 
+void Minesweeper::changeKind(int x, int y) 
 {
     if (field[x][y]->hidden_kind == covered) {
         field[x][y]->hidden_kind = flag;
@@ -54,7 +54,7 @@ void Minesweeper::ChangeKind(int x, int y)
     }
 }
 
-void Minesweeper::SelectDifficulty(int choice)
+void Minesweeper::selectDifficulty(int choice)
 {
     shown_tiles = 0;
     seconds = 0;
@@ -73,7 +73,7 @@ void Minesweeper::SelectDifficulty(int choice)
     }
 }
 
-void Minesweeper::GenerateField() // Create a field of buttons
+void Minesweeper::generateField() // Create a field of buttons
 {
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
@@ -86,7 +86,7 @@ void Minesweeper::GenerateField() // Create a field of buttons
     }
 }
 
-void Minesweeper::GenerateMines(int x, int y) // Generate random mines
+void Minesweeper::generateMines(int x, int y) // Generate random mines
 {
     int mine_x;
     int mine_y;
@@ -140,7 +140,7 @@ bool Minesweeper::validTile(int x, int y) // Checks if the coordinates exist in 
     return (x >= 0) && (x < dif.width) && (y >= 0) && (y < dif.height);
 }
 
-bool Minesweeper::CheckWin() // Flag all remaining mines and disable buttons
+bool Minesweeper::checkWin() // Flag all remaining mines and disable buttons
 {
     if (shown_tiles != (dif.width)*(dif.height) - dif.mine_count) return false; // Only mines remained hidden
     //SaveScore();
