@@ -22,16 +22,14 @@ class GameFrame : public wxFrame
         Minesweeper M;
         wxPanel *new_board;
         wxTimer timer;
+        int seconds;
         wxBitmapButton *buttons[30][16];
         wxBitmap type_bmp[12];
         wxBitmap kind_bmp[4];
-        int width;
-        int height;
-        int mine_count;
 
         void chooseDifficulty(wxEvent& event);
         void loadBitmaps();
-        void createButtons(int width, int height);
+        void createButtons();
         void OnTimer(wxTimerEvent &);
         void OnExit(wxCommandEvent &);
         void OnLeftDown(wxMouseEvent &);

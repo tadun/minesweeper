@@ -1,12 +1,9 @@
 #include "gameframe.hpp"
 #include "minesweeper.hpp"
-#include <cstdlib> 
-
-// saving score
-// memory leak
 
 enum id_options 
-{   beginner_id = 1,
+{   
+    beginner_id = 1,
     intermediate_id = 2,
     expert_id = 3,
     timer_id = 4
@@ -17,16 +14,13 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     timer(this, timer_id)
 {
     M.selectDifficulty(dif);
-   
-    width = M.getWidth();
-    height = M.getHeight();
-    mine_count = M.getMineCount();
-   
     M.generateField();
 
     // Setting up the status bar
     CreateStatusBar();
-    string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) + "\t  Mines: " + to_string(M.dif.mine_count-M.flagged);
+    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) 
+    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged())
+    + "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
     SetStatusText(output);
     new_board = new wxPanel(this, wxID_ANY);
 
@@ -46,7 +40,7 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     SetMenuBar(menuBar);
 
     loadBitmaps();
-    createButtons(width, height);
+    createButtons();
     Fit();
 }
 
@@ -66,12 +60,12 @@ void GameFrame::loadBitmaps()
     }
  }
 
-void GameFrame::createButtons(int width, int height) 
+void GameFrame::createButtons() 
 {
     int button_id = 0;
 
-    for (int i = 0; i < width; i++) {
-        for (int j = 0; j < height; j++) {
+    for (int i = 0; i < M.getWidth(); i++) {
+        for (int j = 0; j < M.getHeight(); j++) {
             wxBitmapButton *button = new wxBitmapButton (this, button_id, kind_bmp[covered], wxPoint(i*20, j*20), wxSize(20,20));
             button->Bind(wxEVT_RIGHT_DOWN, &GameFrame::OnRightDown, this);
             button->Bind(wxEVT_LEFT_DOWN, &GameFrame::OnLeftDown, this);
@@ -84,18 +78,18 @@ void GameFrame::createButtons(int width, int height)
 void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react appropriately
 {
     int id = event.GetId();
-    int x = id/height;
-    int y = id%height;
+    int x = id/M.getHeight();
+    int y = id%M.getHeight();
 
-    if (M.shown_tiles == 0) {
+    if (M.getShownTiles() == 0) {
         timer.Start(1000);
         M.generateMines(x, y);
     }
 
     M.gameLogic(x, y);
 
-    for (int i = 0; i < width; i++) {
-        for (int j = 0; j < height; j++) {
+    for (int i = 0; i < M.getWidth(); i++) {
+        for (int j = 0; j < M.getHeight(); j++) {
             if (M.field[i][j]->hidden_kind == uncovered) {
                 if (M.field[i][j]->tile_type == number) {
                     buttons[i][j]->SetBitmap(type_bmp[M.field[i][j]->number]);
@@ -109,21 +103,20 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
 
     if (M.checkWin()) {
         timer.Stop();
-        string time = to_string(M.seconds/60) + ":" + to_string(M.seconds%60);
+        string time = to_string(seconds/60) + ":" + to_string(seconds%60);
         SetStatusText("You won!\t Time: " + time);
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
+        for (int i = 0; i < M.getWidth(); i++) {
+            for (int j = 0; j < M.getHeight(); j++) {
                 buttons[i][j]->Disable();
             }
         }
-        //SaveScore();
     }
 
     if (M.field[x][y]->tile_type == hit) {
         SetStatusText("Good luck next time!");
         timer.Stop();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
+        for (int i = 0; i < M.getWidth(); i++) {
+            for (int j = 0; j < M.getHeight(); j++) {
                 buttons[i][j]->Disable();
             }
         }                 
@@ -133,8 +126,8 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
 void GameFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a questionmark and a neutral
 {
     int id = event.GetId();
-    int x = id/height;
-    int y = id%height;
+    int x = id/M.getHeight();
+    int y = id%M.getHeight();
 
     M.changeKind(x, y);
 
@@ -146,14 +139,13 @@ void GameFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a ques
 
 void GameFrame::chooseDifficulty(wxEvent& event) {
     int id = event.GetId();
-
+    seconds = 0;
     M.selectDifficulty(id);
 
-    GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.dif.width*20, M.dif.height*20+55), id);
+    GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.getWidth()*20, M.getHeight()*20+55), id);
     frame->Show();
 
     Close(true);
-
 }
 
 void GameFrame::OnExit(wxCommandEvent &)
@@ -163,7 +155,9 @@ void GameFrame::OnExit(wxCommandEvent &)
 
 void GameFrame::OnTimer(wxTimerEvent &) // Update time and remaining mines each second
 {
-    M.seconds++;
-    string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) + "\t  Mines: " + to_string(mine_count-M.flagged);
+    seconds++;
+    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) 
+    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged())
+    + "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
     SetStatusText(output);
 }

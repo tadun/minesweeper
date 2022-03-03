@@ -1,6 +1,6 @@
 #include "minesweeper.hpp"
 
-const difficulty beginner = {9, 9, 10};
+const difficulty beginner = {9, 9, 5};
 const difficulty intermediate = {16, 16, 40};
 const difficulty expert = {30, 16, 99};
 
@@ -57,8 +57,18 @@ void Minesweeper::changeKind(int x, int y)
 void Minesweeper::selectDifficulty(int choice)
 {
     shown_tiles = 0;
-    seconds = 0;
     flagged = 0;
+
+    fstream file("scores.csv");
+    string number;
+
+    int i = 0;
+    while (file >> number) {
+        if (i == choice-1) {
+            top = stoi(number);
+        }
+    }
+    file.close();
 
     if (choice == 1) { // Difficulty 1: 9*9 10 mines
         dif = beginner;
@@ -143,7 +153,7 @@ bool Minesweeper::validTile(int x, int y) // Checks if the coordinates exist in 
 bool Minesweeper::checkWin() // Flag all remaining mines and disable buttons
 {
     if (shown_tiles != (dif.width)*(dif.height) - dif.mine_count) return false; // Only mines remained hidden
-    //SaveScore();
+    saveScore();
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
             if (field[i][j]->tile_type == mine) {
@@ -156,52 +166,13 @@ bool Minesweeper::checkWin() // Flag all remaining mines and disable buttons
 
 void Minesweeper::saveScore() // Save the score if it is one of the top five
 {
-    fstream file("scores_1.csv");
-    int score;
-    string temporary[5];
-    string word;
-    string line;
-    string my_name;
+    
+    // file.open("scores.csv", ios::out | ios::trunc); // Replace the old scores
 
-    int i = 0;
-    while (file >> line) {
-        stringstream s(line);
+    
+    // file << temporary[i] << endl;
 
-        getline(s, word, ',');
-        score = stoi(word);
-
-        if (score > seconds) { // New high score
-            cout << "Enter your name: ";
-            cin >> my_name;
-            string out = to_string(seconds) + "," + my_name;
-            temporary[i] = out;
-            i++;
-
-            if (i <= 3) {
-                temporary[i] = line;
-                i++;
-            }
-
-            while (file >> line && i <= 4) {
-                temporary[i] = line;
-                i++;
-            }
-        }
-
-        else {
-            temporary[i] = line;
-            i++;
-        }
-    }
-
-    file.close();
-    file.open("scores_1.csv", ios::out | ios::trunc); // Replace the old scores
-
-    for (int i = 0; i <= 4; i++) {
-        file << temporary[i] << endl;
-    }
-
-    file.close();
+    // file.close();
 }
 
 void Minesweeper::showField()
