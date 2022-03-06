@@ -4,11 +4,14 @@ const difficulty beginner = {9, 9, 5};
 const difficulty intermediate = {16, 16, 40};
 const difficulty expert = {30, 16, 99};
 
-void Minesweeper::gameLogic(int x, int y) 
+result Minesweeper::gameLogic(int x, int y) 
 {
-    if (field[x][y]->hidden_kind != covered && field[x][y]->hidden_kind != questionmark) return;
-    if (field[x][y]->number == 0) {
+    if (field[x][y]->hidden_kind != covered && field[x][y]->hidden_kind != questionmark) return inactive;
+    
+    else if (field[x][y]->number == 0) {
         showZeros(x,y);
+        if (checkWin()) {return win;}
+        return zero;
     }
 
     else if (field[x][y]->tile_type == mine) { // Explode
@@ -18,21 +21,23 @@ void Minesweeper::gameLogic(int x, int y)
         for (int i = 0; i < dif.width; i++) {
             for (int j = 0; j < dif.height; j++) { // Show remaining mines
                 if (field[i][j]->tile_type == mine && field[i][j]->hidden_kind != flag) {
-                    field[i][j]->hidden_kind = uncovered;
+                    //field[i][j]->hidden_kind = uncovered;
                 }
                 else if (field[i][j]->hidden_kind == flag && field[i][j]->tile_type != mine) { // Incorrect flag
-                    field[i][j]->hidden_kind = uncovered;
+                    //field[i][j]->hidden_kind = uncovered;
                     field[i][j]->tile_type = wrong;
                 }
             }
         }
         field[x][y]->tile_type = hit;
+        return lost;
     }
-
 
     else {
         shown_tiles++;
         field[x][y]->hidden_kind = uncovered;
+        if (checkWin()) {return win;}
+        return regular;
     }
 
 }
@@ -54,10 +59,11 @@ void Minesweeper::changeKind(int x, int y)
     }
 }
 
-void Minesweeper::selectDifficulty(int choice)
+void Minesweeper::selectDifficulty(int num)
 {
     shown_tiles = 0;
     flagged = 0;
+    choice = num;
 
     fstream file("scores.csv");
     string number;
@@ -151,9 +157,10 @@ bool Minesweeper::validTile(int x, int y) // Checks if the coordinates exist in 
 }
 
 bool Minesweeper::checkWin() // Flag all remaining mines and disable buttons
-{
+{    
     if (shown_tiles != (dif.width)*(dif.height) - dif.mine_count) return false; // Only mines remained hidden
     saveScore();
+
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
             if (field[i][j]->tile_type == mine) {
@@ -166,13 +173,21 @@ bool Minesweeper::checkWin() // Flag all remaining mines and disable buttons
 
 void Minesweeper::saveScore() // Save the score if it is one of the top five
 {
-    
-    // file.open("scores.csv", ios::out | ios::trunc); // Replace the old scores
+    //fstream file;
+    //file.open("scores.csv", ios::out | ios::trunc); // Replace the old scores
 
-    
-    // file << temporary[i] << endl;
+    fstream file("scores.csv");
+    string number;
 
-    // file.close();
+    int i = 0;
+    while (file >> number) {
+        if (i == choice-1) {
+            if (seconds < top) {
+                file << seconds;
+            }
+        }
+    }
+    file.close();
 }
 
 void Minesweeper::showField()

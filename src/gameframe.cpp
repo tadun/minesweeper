@@ -18,7 +18,8 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 
     // Setting up the status bar
     CreateStatusBar();
-    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) 
+    M.seconds = 0;
+    string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) 
     + "   Mines: " + to_string(M.getMineCount()-M.getFlagged())
     + "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
     SetStatusText(output);
@@ -80,46 +81,71 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
     int id = event.GetId();
     int x = id/M.getHeight();
     int y = id%M.getHeight();
+    string time;
 
     if (M.getShownTiles() == 0) {
         timer.Start(1000);
         M.generateMines(x, y);
     }
 
-    M.gameLogic(x, y);
+    result output = M.gameLogic(x, y);
 
-    for (int i = 0; i < M.getWidth(); i++) {
-        for (int j = 0; j < M.getHeight(); j++) {
-            if (M.field[i][j]->hidden_kind == uncovered) {
-                if (M.field[i][j]->tile_type == number) {
-                    buttons[i][j]->SetBitmap(type_bmp[M.field[i][j]->number]);
-                }
-                else {
-                    buttons[i][j]->SetBitmap(type_bmp[M.field[i][j]->tile_type]);
+    if (M.field[x][y]->tile_type == number) {
+        buttons[x][y]->SetBitmap(type_bmp[M.field[x][y]->number]);
+    }
+    else {
+        buttons[x][y]->SetBitmap(type_bmp[M.field[x][y]->tile_type]);
+    }
+   
+    switch (output) {
+    case zero:
+        for (int i = 0; i < M.getWidth(); i++) {
+            for (int j = 0; j < M.getHeight(); j++) {
+                if (M.field[i][j]->hidden_kind == uncovered) {
+                    if (M.field[i][j]->tile_type == number) {
+                        buttons[i][j]->SetBitmap(type_bmp[M.field[i][j]->number]);
+                    }
+                    else {
+                        buttons[i][j]->SetBitmap(type_bmp[M.field[i][j]->tile_type]);
+                    }
                 }
             }
         }
-    }
+        break;
 
-    if (M.checkWin()) {
+    case win:
         timer.Stop();
-        string time = to_string(seconds/60) + ":" + to_string(seconds%60);
+        time = to_string(M.seconds/60) + ":" + to_string(M.seconds%60);
         SetStatusText("You won!\t Time: " + time);
         for (int i = 0; i < M.getWidth(); i++) {
             for (int j = 0; j < M.getHeight(); j++) {
+                if (M.field[i][j]->tile_type == mine) {
+                    buttons[i][j]->SetBitmap(kind_bmp[flag]);
+                }
                 buttons[i][j]->Disable();
             }
         }
-    }
+        break;
 
-    if (M.field[x][y]->tile_type == hit) {
+    case lost:
         SetStatusText("Good luck next time!");
         timer.Stop();
+
         for (int i = 0; i < M.getWidth(); i++) {
-            for (int j = 0; j < M.getHeight(); j++) {
-                buttons[i][j]->Disable();
+            for (int j = 0; j < M.getWidth(); j++) { // Show remaining mines
+                if (M.field[i][j]->tile_type == mine && M.field[i][j]->hidden_kind != flag) {
+                    buttons[i][j]->SetBitmap(type_bmp[M.field[i][j]->tile_type]);
+                }
+                if (M.field[i][j]->tile_type == wrong) { // Incorrect flag
+                    buttons[i][j]->SetBitmap(type_bmp[wrong]);
+                }
+                buttons[i][j]->Disable(); // Deactivate all buttons
             }
-        }                 
+        }
+        buttons[x][y]->SetBitmap(type_bmp[hit]);
+    break;
+    default:
+    break;
     }
 }
 
@@ -134,12 +160,12 @@ void GameFrame::OnRightDown(wxMouseEvent& event) // Swich between a flag, a ques
     if (M.field[x][y]->hidden_kind != 3) {
         buttons[x][y]->SetBitmap(kind_bmp[M.field[x][y]->hidden_kind]);
     }
-    
 }
 
-void GameFrame::chooseDifficulty(wxEvent& event) {
+void GameFrame::chooseDifficulty(wxEvent& event) 
+{
     int id = event.GetId();
-    seconds = 0;
+    M.seconds = 0;
     M.selectDifficulty(id);
 
     GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.getWidth()*20, M.getHeight()*20+55), id);
@@ -155,8 +181,8 @@ void GameFrame::OnExit(wxCommandEvent &)
 
 void GameFrame::OnTimer(wxTimerEvent &) // Update time and remaining mines each second
 {
-    seconds++;
-    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) 
+    M.seconds++;
+    string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) 
     + "   Mines: " + to_string(M.getMineCount()-M.getFlagged())
     + "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
     SetStatusText(output);

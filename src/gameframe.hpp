@@ -27,6 +27,7 @@ class GameFrame : public wxFrame
         wxBitmap type_bmp[12];
         wxBitmap kind_bmp[4];
 
+        void saveScore();
         void chooseDifficulty(wxEvent& event);
         void loadBitmaps();
         void createButtons();
