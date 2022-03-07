@@ -1,6 +1,10 @@
 #include "gameframe.hpp"
 #include "minesweeper.hpp"
 
+// type kind
+// generate mines
+// On left down
+
 enum id_options 
 {   
     beginner_id = 1,
@@ -14,16 +18,19 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     timer(this, timer_id)
 {
     M.selectDifficulty(dif);
-    M.generateField();
-
+    //M.generateField();
+    
     // Setting up the status bar
     CreateStatusBar();
     M.seconds = 0;
     string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) 
-    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged())
-    + "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
+    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged());
+
+    if (M.getTop() != 0) {
+        output += "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
+    }
+    
     SetStatusText(output);
-    new_board = new wxPanel(this, wxID_ANY);
 
     // Creating the difficulty menu
     wxMenu *menu_game = new wxMenu;
@@ -116,7 +123,13 @@ void GameFrame::OnLeftDown(wxMouseEvent& event) // Uncover the tile and react ap
     case win:
         timer.Stop();
         time = to_string(M.seconds/60) + ":" + to_string(M.seconds%60);
-        SetStatusText("You won!\t Time: " + time);
+        
+        SetStatusText("You won!  Time: " + time);
+
+        if (M.seconds < M.getTop()) {
+            SetStatusText("You won!  Time: " + time + "  New Best!");
+        }
+        
         for (int i = 0; i < M.getWidth(); i++) {
             for (int j = 0; j < M.getHeight(); j++) {
                 if (M.field[i][j]->tile_type == mine) {
@@ -183,7 +196,11 @@ void GameFrame::OnTimer(wxTimerEvent &) // Update time and remaining mines each 
 {
     M.seconds++;
     string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) 
-    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged())
-    + "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
+    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged());
+
+    if (M.getTop() != 0) {
+        output += "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
+    }
+
     SetStatusText(output);
 }

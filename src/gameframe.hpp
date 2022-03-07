@@ -20,9 +20,7 @@ class GameFrame : public wxFrame
 
     private:
         Minesweeper M;
-        wxPanel *new_board;
         wxTimer timer;
-        int seconds;
         wxBitmapButton *buttons[30][16];
         wxBitmap type_bmp[12];
         wxBitmap kind_bmp[4];

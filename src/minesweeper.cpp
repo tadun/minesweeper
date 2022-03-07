@@ -1,8 +1,9 @@
 #include "minesweeper.hpp"
 
-const difficulty beginner = {9, 9, 5};
+const difficulty beginner = {9, 9, 10};
 const difficulty intermediate = {16, 16, 40};
 const difficulty expert = {30, 16, 99};
+difficulty dif_array[3] = {beginner, intermediate, expert};
 
 result Minesweeper::gameLogic(int x, int y) 
 {
@@ -62,35 +63,23 @@ void Minesweeper::changeKind(int x, int y)
 void Minesweeper::selectDifficulty(int num)
 {
     shown_tiles = 0;
+    top_score = 0;
     flagged = 0;
     choice = num;
+    string name;
 
-    fstream file("scores.csv");
-    string number;
+    name = "score_" + to_string(num) + ".txt";
+    fstream file(name, ios::in);
+    string input;
 
-    int i = 0;
-    while (file >> number) {
-        if (i == choice-1) {
-            top = stoi(number);
-        }
+    while (file >> input) {
+        top_score = stoi(input);
     }
+
     file.close();
 
-    if (choice == 1) { // Difficulty 1: 9*9 10 mines
-        dif = beginner;
-    }
+    dif = dif_array[choice-1];
 
-    else if (choice == 2) { // Difficulty 2: 16*16 40 mines 
-        dif = intermediate;
-    }
-
-    else if (choice == 3) { // Difficulty 3: 30*16 99 mines
-        dif = expert;
-    }
-}
-
-void Minesweeper::generateField() // Create a field of buttons
-{
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
             tile *new_tile = new tile;
@@ -173,20 +162,15 @@ bool Minesweeper::checkWin() // Flag all remaining mines and disable buttons
 
 void Minesweeper::saveScore() // Save the score if it is one of the top five
 {
-    //fstream file;
-    //file.open("scores.csv", ios::out | ios::trunc); // Replace the old scores
+    fstream file;
+    string name = "score_" + to_string(choice) + ".txt";
+    file.open(name, ios::out);
 
-    fstream file("scores.csv");
-    string number;
 
-    int i = 0;
-    while (file >> number) {
-        if (i == choice-1) {
-            if (seconds < top) {
-                file << seconds;
-            }
-        }
+    if (seconds < top_score || top_score == 0) {
+        file << seconds;
     }
+
     file.close();
 }
 

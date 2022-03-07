@@ -55,7 +55,6 @@ class Minesweeper
         int seconds;
     
         void selectDifficulty(int num);
-        void generateField();
         void generateMines(int x, int y);
         result gameLogic(int x, int y);
         void changeKind(int x, int y);
@@ -67,13 +66,13 @@ class Minesweeper
         int getMineCount() {return dif.mine_count;};
         int getShownTiles() {return shown_tiles;};
         int getFlagged() {return flagged;};
-        int getTop() {return top;};
+        int getTop() {return top_score;};
 
     private:
         difficulty dif;
         int shown_tiles;
         int flagged;
-        int top;
+        int top_score;
         int choice;
         bool validTile(int x, int y);
         void setSurroundingTiles(int x, int y);
