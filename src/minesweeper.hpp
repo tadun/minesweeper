@@ -8,7 +8,7 @@
 
 using namespace std;
 
-enum kind 
+enum above_kind // How the tile looks when covered
 {   
     covered = 0, 
     flag = 1, 
@@ -16,7 +16,7 @@ enum kind
     uncovered = 3,
 };
 
-enum type 
+enum under_type // What is hidden below
 {
     hit = 9,
     mine = 10,
@@ -24,23 +24,22 @@ enum type
     number = 12
 };
 
-enum result
+enum result // Ways the move can result
 {
     zero = 0,
-    regular = 1,
+    other = 1,
     lost = 2,
-    win = 3,
-    inactive = 4
+    win = 3
 };
 
-struct tile 
+struct tile // Properties of each tile
 {  
     int number;
-    type tile_type;
-    kind hidden_kind;
+    under_type tile_type;
+    above_kind hidden_kind;
 };
 
-struct difficulty 
+struct difficulty // Game parameters
 {
     int width;
     int height;
@@ -56,11 +55,12 @@ class Minesweeper
     
         void selectDifficulty(int num);
         void generateMines(int x, int y);
-        result gameLogic(int x, int y);
         void changeKind(int x, int y);
-        bool checkWin();
         void saveScore();
+        bool checkWin();
+        result gameLogic(int x, int y);
 
+        // Functions returning variables used by other classes
         int getWidth() {return dif.width;};
         int getHeight() {return dif.height;};
         int getMineCount() {return dif.mine_count;};
@@ -74,10 +74,11 @@ class Minesweeper
         int flagged;
         int top_score;
         int choice;
-        bool validTile(int x, int y);
+
         void setSurroundingTiles(int x, int y);
         void showZeros(int x, int y);
         void showField();
+        bool validTile(int x, int y);
 };
 
 #endif
