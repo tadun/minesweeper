@@ -1,6 +1,7 @@
-// Minesweeper using wxWidgets by Tadeas Horn
+// Minesweeper using wxWidgets by Tadeas Horn for MacOS
 
 #include "gameframe.hpp"
+#include "menuframe.hpp"
 #include "minesweeper.hpp"
 
 enum id_options // IDs for wxEvents
@@ -16,38 +17,64 @@ GameFrame::GameFrame(const wxString &title, const wxPoint &pos, const wxSize &si
     : wxFrame(NULL, wxID_ANY, title, pos, size),
     timer(this, timer_id)
 {
+    seconds = 0; // Reset timer
     M.selectDifficulty(dif);
     
-    // Setting up the status bar
+    loadTheBestScore();
     CreateStatusBar();
-    M.seconds = 0;
-    string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) 
-    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged());
+    SetStatusText(generateOutput());
+    createMenu();
 
-    if (M.getTop() != 0) {
-        output += "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
+    loadBitmaps();
+    createButtons();
+    Fit(); // Adjust the window size to its children
+}
+
+// Load the best score for this difficulty
+void GameFrame::loadTheBestScore() 
+{
+    
+    string input, name;
+    top_score = 0;
+    name = "scores/" + to_string(M.getDifChoice()) + ".txt";
+    fstream file(name, ios::in);
+    
+    while (file >> input) {
+        top_score = stoi(input);
     }
 
-    SetStatusText(output);
+    file.close();
+}
 
-    // Creating the difficulty menu
+// Returns a string with time, ramining mines and best score
+string GameFrame::generateOutput() 
+{
+    string output = "Time: " + to_string(seconds/60) + ":" + to_string(seconds%60) 
+    + "  Mines: " + to_string(M.getMineCount()-M.getFlagged());
+
+    if (top_score != 0) {
+        output += "  Best: " + to_string(top_score/60) + ":" + to_string(top_score%60);
+    }
+
+    return output;
+}
+
+// Creating the difficulty menu
+void GameFrame::createMenu()
+{
     wxMenu *menu_game = new wxMenu;
-    menu_game->Append(1, "Beginner");
+    menu_game->Append(beginner_id, "Beginner");
     Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, beginner_id);
-    menu_game->Append(2, "Intermediate");
+    menu_game->Append(intermediate_id, "Intermediate");
     Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, intermediate_id);
-    menu_game->Append(3, "Expert");
+    menu_game->Append(expert_id, "Expert");
     Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, expert_id);
     menu_game->AppendSeparator();
     menu_game->Append(wxID_EXIT);
 
     wxMenuBar *menuBar = new wxMenuBar;
-    menuBar->Append(menu_game, "New Game");
+    menuBar->Append(menu_game, "Game");
     SetMenuBar(menuBar);
-
-    loadBitmaps();
-    createButtons();
-    Fit(); // Adjust the window size to its children
 }
 
 // Save all images into arrays
@@ -56,29 +83,37 @@ void GameFrame::loadBitmaps()
     string path;
     int i;
 
-    for (i = 0; i <= 12; i++) { // Options for uncovered
-        path = "Images/" + to_string(i) + ".png";
-        under_type_bmp[i].LoadFile(path, wxBITMAP_TYPE_PNG);
-    }
-
-    for (i = 12; i <= 14; i++) { // Three kinds of covered
-        path = "Images/" + to_string(i) + ".png";
-        under_type_bmp[i].LoadFile(path, wxBITMAP_TYPE_PNG); // Are you serious??!
+    for (i = 0; i <= 14; i++) { // Options for uncovered
+        path = "images/" + to_string(i) + ".png";
+        bitmaps[i].LoadFile(path, wxBITMAP_TYPE_PNG);
     }
 }
 
-// Create the propoper number of buttons a bind them to keys
+// Create the propoper number of buttons a bind them to left and right click
 void GameFrame::createButtons() 
 {
     int button_id = 0;
 
     for (int i = 0; i < M.getWidth(); i++) {
         for (int j = 0; j < M.getHeight(); j++) {
-            wxBitmapButton *button = new wxBitmapButton (this, button_id, above_kind_bmp[covered], wxPoint(i*20, j*20), wxSize(20,20));
-            button->Bind(wxEVT_RIGHT_DOWN, &GameFrame::OnRightDown, this);
+            wxBitmapButton *button = new wxBitmapButton(this, button_id, bitmaps[covered], wxPoint(i*20, j*20), wxSize(20,20));
             button->Bind(wxEVT_LEFT_DOWN, &GameFrame::OnLeftDown, this);
+            button->Bind(wxEVT_RIGHT_DOWN, &GameFrame::OnRightDown, this);
             buttons[i][j] = button;
             button_id++;
+        }
+    }
+}
+
+// Show all uncovered tiles and disable if true
+void GameFrame::showUncovered(bool disable) 
+{
+    for (int i = 0; i < M.getWidth(); i++) {
+        for (int j = 0; j < M.getHeight(); j++) {
+            if (M.field[i][j]->hidden_kind == uncovered) {
+                buttons[i][j]->SetBitmap(bitmaps[M.field[i][j]->number]);
+            }
+            if (disable) {buttons[i][j]->Disable();}
         }
     }
 }
@@ -91,62 +126,36 @@ void GameFrame::OnLeftDown(wxMouseEvent& event)
     int y = id%M.getHeight();
 
     string text;
-    result output = M.gameLogic(x, y);
+    result output;
 
     if (M.getShownTiles() == 0) {timer.Start(1000);} // Start the time
-
-    if (M.field[x][y]->tile_type == number) { // Regular number
-        buttons[x][y]->SetBitmap(under_type_bmp[M.field[x][y]->number]);
-    }
+    
+    output = M.gameLogic(x, y);
+    if (output != incorrect) {buttons[x][y]->SetBitmap(bitmaps[M.field[x][y]->number]);}
 
     switch (output) {
     case zero:
-        for (int i = 0; i < M.getWidth(); i++) {
-            for (int j = 0; j < M.getHeight(); j++) {
-                if (M.field[i][j]->hidden_kind == uncovered) {
-                    buttons[i][j]->SetBitmap(under_type_bmp[M.field[i][j]->number]);
-                }
-            }
-        }
+        showUncovered(false);
         break;
 
     case win:
-        // Set status bar
         timer.Stop();
-        text = "You won!  Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60);
-        if (M.seconds < M.getTop()) {text += "  New best!";}
-        SetStatusText(text);
-        
-        // Flag mines
-        for (int i = 0; i < M.getWidth(); i++) {
-            for (int j = 0; j < M.getHeight(); j++) {
-                if (M.field[i][j]->tile_type == mine) {
-                    buttons[i][j]->SetBitmap(above_kind_bmp[flag]);
-                }
-                buttons[i][j]->Disable(); // Deactivate all buttons
-            }
-        }
+        saveScore();
+        text = "You won!  Time: " + to_string(seconds/60) + ":" + to_string(seconds%60);
+        if (seconds < top_score) {text += "  New best!";}
+        SetStatusText(text); // Show output
+        showUncovered(true); // Flag mines
         break;
 
-    case lost:
+    case loss:
         timer.Stop();
         SetStatusText("Good luck next time!");
+        showUncovered(true); // Show remaining mines
+        buttons[x][y]->SetBitmap(bitmaps[hit]);
+        break;
 
-        for (int i = 0; i < M.getWidth(); i++) {
-            for (int j = 0; j < M.getHeight(); j++) { // Show remaining mines
-                if (M.field[i][j]->tile_type == mine && M.field[i][j]->hidden_kind != flag) {
-                    buttons[i][j]->SetBitmap(under_type_bmp[M.field[i][j]->tile_type]);
-                }
-                if (M.field[i][j]->tile_type == wrong) { // Incorrect flag
-                    buttons[i][j]->SetBitmap(under_type_bmp[wrong]);
-                }
-                buttons[i][j]->Disable(); // Deactivate all buttons
-            }
-        }
-        buttons[x][y]->SetBitmap(under_type_bmp[hit]);
-    break;
     default:
-    break;
+        break;
     }
 }
 
@@ -160,7 +169,7 @@ void GameFrame::OnRightDown(wxMouseEvent& event)
     M.changeKind(x, y);
 
     if (M.field[x][y]->hidden_kind != uncovered) {
-        buttons[x][y]->SetBitmap(above_kind_bmp[M.field[x][y]->hidden_kind]);
+        buttons[x][y]->SetBitmap(bitmaps[M.field[x][y]->hidden_kind]);
     }
 }
 
@@ -168,7 +177,6 @@ void GameFrame::OnRightDown(wxMouseEvent& event)
 void GameFrame::chooseDifficulty(wxEvent& event) 
 {
     int id = event.GetId();
-    M.seconds = 0; // Reset timer
     M.selectDifficulty(id);
 
     GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.getWidth()*20, M.getHeight()*20+55), id);
@@ -177,20 +185,27 @@ void GameFrame::chooseDifficulty(wxEvent& event)
     Close(true); // Close the old game
 }
 
-void GameFrame::OnExit(wxCommandEvent &)
+// Save the score if it is the new best
+void GameFrame::saveScore() 
 {
-    Close(true);
+    fstream file;
+    string name = "scores/" + to_string(M.getDifChoice()) + ".txt"; // File matching the difficulty
+    file.open(name, ios::out);
+
+    if (seconds < top_score || top_score == 0) {
+        file << seconds;
+    }
+
+    else {
+        file << top_score;
+    }
+
+    file.close();
 }
 
 // Update time and remaining mines each second
-void GameFrame::OnTimer(wxTimerEvent &) {
-    M.seconds++;
-    string output = "Time: " + to_string(M.seconds/60) + ":" + to_string(M.seconds%60) 
-    + "   Mines: " + to_string(M.getMineCount()-M.getFlagged());
-
-    if (M.getTop() != 0) {
-        output += "   Best: " + to_string(M.getTop()/60) + ":" + to_string(M.getTop()%60);
-    }
-
-    SetStatusText(output);
+void GameFrame::OnTimer(wxTimerEvent &) 
+{
+    seconds++;
+    SetStatusText(generateOutput());
 }

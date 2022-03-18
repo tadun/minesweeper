@@ -1,55 +1,60 @@
-// The original Minesweeper Game by Tadeas Horn
+// The Minesweeper Game by Tadeas Horn
 
 #include "minesweeper.hpp"
 
-// Possible to adjust the game parameters here
 const difficulty beginner = {9, 9, 10};
 const difficulty intermediate = {16, 16, 40};
 const difficulty expert = {30, 16, 99};
 difficulty dif_array[3] = {beginner, intermediate, expert};
 
-
 // Reacts baset on the selected tile and returns the result
 result Minesweeper::gameLogic(int x, int y) 
 {
-    if (field[x][y]->hidden_kind != covered && field[x][y]->hidden_kind != questionmark) return other;
+    if (field[x][y]->hidden_kind != covered && field[x][y]->hidden_kind != questionmark) return incorrect;
     
     if (getShownTiles() == 0) { // Make sure the mine was not hit on the first click
         generateMines(x, y);
     }
 
-    if (field[x][y]->number == 0) {
+    switch (field[x][y]->number) {
+    case 0:
         showZeros(x,y); // Recursively run for all surrounding zeros
         if (checkWin()) {return win;}
         return zero;
-    }
+        break;
 
-    else if (field[x][y]->tile_type == mine) { // Explode
+    case mine: // Explode
         shown_tiles++;
         field[x][y]->hidden_kind = uncovered;
+        reactToHit();
+        return loss;
+        break;
 
-        for (int i = 0; i < dif.width; i++) {
-            for (int j = 0; j < dif.height; j++) { // Show remaining mines
-                if (field[i][j]->tile_type == mine && field[i][j]->hidden_kind != flag) {
-                    field[i][j]->hidden_kind = uncovered;
-                }
-                else if (field[i][j]->hidden_kind == flag && field[i][j]->tile_type != mine) { // Incorrect flag
-                    field[i][j]->hidden_kind = uncovered;
-                    field[i][j]->tile_type = wrong;
-                }
-            }
-        }
-        field[x][y]->tile_type = hit;
-        return lost;
-    }
-
-    else { // Just a regular number
+    default: // Just a regular number
         shown_tiles++;
         field[x][y]->hidden_kind = uncovered;
         if (checkWin()) {return win;}
-        return other;
+        return regular;
+        break;
     }
+}
 
+// Show remaining mines and mark incorrect flags
+void Minesweeper::reactToHit()
+{
+    for (int i = 0; i < dif.width; i++) {
+        for (int j = 0; j < dif.height; j++) {
+            if (field[i][j]->number == mine && field[i][j]->hidden_kind != flag) {
+                field[i][j]->hidden_kind = uncovered;
+                field[i][j]->number = mine; // Show remaining mines
+
+            }
+            else if (field[i][j]->hidden_kind == flag && field[i][j]->number != mine) {
+                field[i][j]->hidden_kind = uncovered;
+                field[i][j]->number = wrong; // Incorrect flag
+            }
+        }
+    }
 }
 
 // Change the kind of the tile when covered
@@ -71,33 +76,19 @@ void Minesweeper::changeKind(int x, int y)
 }
 
 // Choose parameters, load score, prepare field
-void Minesweeper::selectDifficulty(int num)
+void Minesweeper::selectDifficulty(int difficulty_input)
 {
-    string input;
-    string name;
     shown_tiles = 0;
     flagged = 0;
-    top_score = 0;
-    choice = num;
 
-    dif = dif_array[choice-1]; 
-
-    // Load the best score for this difficulty
-    name = "score_" + to_string(choice) + ".txt";
-    fstream file(name, ios::in);
-    
-    while (file >> input) {
-        top_score = stoi(input);
-    }
-
-    file.close();
+    difficulty_choice = difficulty_input;
+    dif = dif_array[difficulty_choice-1];
 
     // Generate the field without any values
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
             tile *new_tile = new tile;
             new_tile->number = 0;
-            new_tile->tile_type = number;
             new_tile->hidden_kind = covered;
             field[i][j] = new_tile;
         }
@@ -107,8 +98,7 @@ void Minesweeper::selectDifficulty(int num)
 // Generate random mines based on mine_count
 void Minesweeper::generateMines(int x, int y) 
 {
-    int mine_x;
-    int mine_y;
+    int mine_x, mine_y;
 
     srand(time(NULL)); // Seed for the rand function
 
@@ -118,10 +108,9 @@ void Minesweeper::generateMines(int x, int y)
           mine_y = rand() % dif.height;
         }
         // In case the there already is a mine or it was hit on the first click
-        while (field[mine_x][mine_y]->tile_type == mine || (mine_x == x && mine_y == y));
+        while (field[mine_x][mine_y]->number == mine || (mine_x == x && mine_y == y));
         
-        field[mine_x][mine_y]->tile_type = mine;
-        field[mine_x][mine_y]->number = 10;
+        field[mine_x][mine_y]->number = mine;
         setSurroundingTiles(mine_x, mine_y); // Add one to all eight closest tiles
     }
 }
@@ -131,7 +120,7 @@ void Minesweeper::setSurroundingTiles(int x, int y)
 {
     for (int i = 0; i <= 2; i++) {
         for (int j = 0; j <= 2; j++) {
-            if (validTile(x-1+i, y-1+j) && field[x-1+i][y-1+j]->tile_type != 10 && !(i == 1 && j == 1)) {
+            if (validTile(x-1+i, y-1+j) && field[x-1+i][y-1+j]->number != mine && !(i == 1 && j == 1)) {
                 field[x-1+i][y-1+j]->number++;
             }       
         }
@@ -166,33 +155,19 @@ bool Minesweeper::validTile(int x, int y)
 bool Minesweeper::checkWin()
 {    
     if (shown_tiles != (dif.width)*(dif.height) - dif.mine_count) return false; // Only mines remained hidden
-    saveScore();
-
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
-            if (field[i][j]->tile_type == mine) {
-                field[i][j]->hidden_kind = flag;
+            if (field[i][j]->number == mine) {
+                field[i][j]->hidden_kind = uncovered;
+                field[i][j]->number = flag;
             }
         }
     }
     return true;
 }
 
-// Save the score if it is the new best
-void Minesweeper::saveScore() {
-    fstream file;
-    string name = "score_" + to_string(choice) + ".txt"; // File matching the difficulty
-    file.open(name, ios::out);
-
-    if (seconds < top_score || top_score == 0) {
-        file << seconds;
-    }
-
-    file.close();
-}
-
-// Default destructor
-Minesweeper::~Minesweeper() {
+Minesweeper::~Minesweeper() 
+{
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {
             delete field[i][j];

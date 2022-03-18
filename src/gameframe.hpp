@@ -16,22 +16,27 @@ class GameFrame : public wxFrame
         GameFrame(const wxString &title, const wxPoint &pos, const wxSize &size, int dif);
 
     private:
+        int seconds;
+        int top_score;
         Minesweeper M; // Object of the game
         wxTimer timer;
         wxBitmapButton *buttons[30][16];
-        wxBitmap under_type_bmp[12];
-        wxBitmap above_kind_bmp[4];
+        wxBitmap bitmaps[15];
 
-        void saveScore();
+        string generateOutput();
+        void loadTheBestScore();
+        void createMenu();
         void loadBitmaps();
         void createButtons();
+        void showUncovered(bool disable);
         void chooseDifficulty(wxEvent& event);
+        void saveScore();
 
         // wxWidgets functions
         void OnTimer(wxTimerEvent &);
-        void OnExit(wxCommandEvent &);
         void OnLeftDown(wxMouseEvent &);
         void OnRightDown(wxMouseEvent &);
+        void OnExit(wxCommandEvent &) {Close(true);};
 
         wxDECLARE_EVENT_TABLE();
 };

@@ -1,7 +1,0 @@
-../configure --with-osx_cocoa --with-macosx-version-min=10.9 --with-macosx-sdk=/Users/tadun/CLionProjects/wxwidgets/MacOSX10.9.sdk --prefix="$(pwd)" 
-
-export CPATH=/usr/local/include LIBRARY_PATH=/usr/local/lib
-
-make -j3 SHARED=1 BUILD=release
-
-wxwidgets version: `3.0.5`

@@ -13,8 +13,8 @@ bool App::OnInit()
 {
     ::wxInitAllImageHandlers();
 
-    GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(300, 300), 1);
-    frame->Show();
+    MenuFrame *menu = new MenuFrame("Menu", wxPoint(550, 275), wxSize(150, 140));
+    menu->Show();
 
     return true;
 }

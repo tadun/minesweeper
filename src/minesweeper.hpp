@@ -10,32 +10,31 @@ using namespace std;
 
 enum above_kind // How the tile looks when covered
 {   
-    covered = 0, 
-    flag = 1, 
-    questionmark = 2,
-    uncovered = 3,
+    covered = 12, 
+    flag = 13, 
+    questionmark = 14,
+    uncovered = 15,
 };
 
 enum under_type // What is hidden below
 {
     hit = 9,
     mine = 10,
-    wrong = 11,
-    number = 12
+    wrong = 11
 };
 
 enum result // Ways the move can result
 {
     zero = 0,
-    other = 1,
-    lost = 2,
-    win = 3
+    loss = 1,
+    win = 2,
+    regular = 3,
+    incorrect = 4
 };
 
 struct tile // Properties of each tile
 {  
     int number;
-    under_type tile_type;
     above_kind hidden_kind;
 };
 
@@ -51,14 +50,12 @@ class Minesweeper
     public:
         tile *field[30][16];
         ~Minesweeper();
-        int seconds;
     
+        result gameLogic(int x, int y);
         void selectDifficulty(int num);
         void generateMines(int x, int y);
         void changeKind(int x, int y);
-        void saveScore();
         bool checkWin();
-        result gameLogic(int x, int y);
 
         // Functions returning variables used by other classes
         int getWidth() {return dif.width;};
@@ -66,18 +63,17 @@ class Minesweeper
         int getMineCount() {return dif.mine_count;};
         int getShownTiles() {return shown_tiles;};
         int getFlagged() {return flagged;};
-        int getTop() {return top_score;};
+        int getDifChoice() {return difficulty_choice;};
 
     private:
         difficulty dif;
         int shown_tiles;
         int flagged;
-        int top_score;
-        int choice;
+        int difficulty_choice;
 
+        void reactToHit();
         void setSurroundingTiles(int x, int y);
         void showZeros(int x, int y);
-        void showField();
         bool validTile(int x, int y);
 };
 

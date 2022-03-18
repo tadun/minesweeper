@@ -4,6 +4,7 @@
 #include <wx/wx.h>
 #include "gameframe.hpp"
 #include "minesweeper.hpp"
+#include "menuframe.hpp"
 
 class App : public wxApp
 {
