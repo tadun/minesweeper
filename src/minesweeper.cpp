@@ -81,9 +81,11 @@ void Minesweeper::selectDifficulty(int difficulty_input)
     shown_tiles = 0;
     flagged = 0;
 
-    difficulty_choice = difficulty_input;
-    dif = dif_array[difficulty_choice-1];
-
+    if (difficulty_input != 4) {
+        difficulty_choice = difficulty_input;
+        dif = dif_array[difficulty_choice-1];
+    }
+   
     // Generate the field without any values
     for (int i = 0; i < dif.width; i++) {
         for (int j = 0; j < dif.height; j++) {

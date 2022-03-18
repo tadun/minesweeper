@@ -9,7 +9,8 @@ enum id_options // IDs for wxEvents
     beginner_id = 1,
     intermediate_id = 2,
     expert_id = 3,
-    timer_id = 4
+    new_game_id = 4,
+    timer_id = 5
 };
 
 // Create a new window with given parameters
@@ -62,18 +63,23 @@ string GameFrame::generateOutput()
 // Creating the difficulty menu
 void GameFrame::createMenu()
 {
-    wxMenu *menu_game = new wxMenu;
-    menu_game->Append(beginner_id, "Beginner");
+    wxMenu *menu_difficulty = new wxMenu;
+    menu_difficulty->Append(beginner_id, "Beginner");
     Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, beginner_id);
-    menu_game->Append(intermediate_id, "Intermediate");
+    menu_difficulty->Append(intermediate_id, "Intermediate");
     Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, intermediate_id);
-    menu_game->Append(expert_id, "Expert");
+    menu_difficulty->Append(expert_id, "Expert");
     Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, expert_id);
-    menu_game->AppendSeparator();
-    menu_game->Append(wxID_EXIT);
+    menu_difficulty->AppendSeparator();
+    menu_difficulty->Append(wxID_EXIT);
+
+    wxMenu *menu_game = new wxMenu;
+    menu_game->Append(new_game_id, "New Game");
+    Bind(wxEVT_COMMAND_MENU_SELECTED, &GameFrame::chooseDifficulty, this, new_game_id);
 
     wxMenuBar *menuBar = new wxMenuBar;
     menuBar->Append(menu_game, "Game");
+    menuBar->Append(menu_difficulty, "Difficulty");
     SetMenuBar(menuBar);
 }
 
@@ -179,7 +185,7 @@ void GameFrame::chooseDifficulty(wxEvent& event)
     int id = event.GetId();
     M.selectDifficulty(id);
 
-    GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.getWidth()*20, M.getHeight()*20+55), id);
+    GameFrame *frame = new GameFrame("Minesweeper", wxPoint(550, 275), wxSize(M.getWidth()*20, M.getHeight()*20+55), M.getDifChoice());
     frame->Show();
 
     Close(true); // Close the old game

@@ -5,7 +5,7 @@ using namespace std;
 wxIMPLEMENT_APP(App);
 
     wxBEGIN_EVENT_TABLE(GameFrame, wxFrame)
-        EVT_TIMER(4, GameFrame::OnTimer)
+        EVT_TIMER(5, GameFrame::OnTimer)
         EVT_MENU(wxID_EXIT, GameFrame::OnExit)
     wxEND_EVENT_TABLE();
 

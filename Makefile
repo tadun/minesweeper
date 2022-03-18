@@ -19,7 +19,7 @@ PRINT :=
 
 # files and folders names
 BUILD_PATH                := ./build
-BINARY_NAME               := main
+BINARY_NAME               := Minesweeper
 SOURCES_PATHS             := ./src
 HEADERS_PATHS             := ./src
 PRECOMPILED_HEADERS_PATHS := ./src/prec
