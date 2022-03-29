@@ -94,7 +94,6 @@ void GameFrame::loadBitmaps()
     // Getting the folder of the binary
     wxFileName f(wxStandardPaths::Get().GetExecutablePath());
     wxString appPath(f.GetPath());
-    std::cout << appPath << std::endl;
 
     for (i = 0; i <= 14; i++) { // Load or bitmaps
         path = appPath + "/images/" + to_string(i) + ".png";
