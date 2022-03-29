@@ -7,6 +7,8 @@
 #include <wx/button.h>
 #include <wx/event.h>
 #include <wx/timer.h>
+#include <wx/stdpaths.h>
+#include <wx/filename.h>
 
 using namespace std;
 

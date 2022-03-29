@@ -1,7 +1,6 @@
 // Minesweeper using wxWidgets by Tadeas Horn for MacOS
 
 #include "gameframe.hpp"
-#include "menuframe.hpp"
 #include "minesweeper.hpp"
 
 enum id_options // IDs for wxEvents
@@ -37,7 +36,10 @@ void GameFrame::loadTheBestScore()
     
     string input, name;
     top_score = 0;
-    name = "scores/" + to_string(M.getDifChoice()) + ".txt";
+    // Finding out the folder of the binary
+    wxFileName f(wxStandardPaths::Get().GetExecutablePath());
+    wxString appPath(f.GetPath());
+    name = appPath + "/scores/" + to_string(M.getDifChoice()) + ".txt";
     fstream file(name, ios::in);
     
     while (file >> input) {
@@ -83,14 +85,19 @@ void GameFrame::createMenu()
     SetMenuBar(menuBar);
 }
 
-// Save all images into arrays
+// Save all images into an array
 void GameFrame::loadBitmaps() 
 {
     string path;
     int i;
 
-    for (i = 0; i <= 14; i++) { // Options for uncovered
-        path = "images/" + to_string(i) + ".png";
+    // Getting the folder of the binary
+    wxFileName f(wxStandardPaths::Get().GetExecutablePath());
+    wxString appPath(f.GetPath());
+    std::cout << appPath << std::endl;
+
+    for (i = 0; i <= 14; i++) { // Load or bitmaps
+        path = appPath + "/images/" + to_string(i) + ".png";
         bitmaps[i].LoadFile(path, wxBITMAP_TYPE_PNG);
     }
 }
@@ -195,8 +202,11 @@ void GameFrame::chooseDifficulty(wxEvent& event)
 void GameFrame::saveScore() 
 {
     fstream file;
-    string name = "scores/" + to_string(M.getDifChoice()) + ".txt"; // File matching the difficulty
-    file.open(name, ios::out);
+    // Getting the folder of the binary
+    wxFileName f(wxStandardPaths::Get().GetExecutablePath());
+    wxString appPath(f.GetPath());
+    string name = "/scores/" + to_string(M.getDifChoice()) + ".txt"; // File matching the difficulty
+    file.open(appPath + name, ios::out);
 
     if (seconds < top_score || top_score == 0) {
         file << seconds;
